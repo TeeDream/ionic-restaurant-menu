@@ -1,0 +1,51 @@
+<p>
+  category-filter works!
+</p>
+<ng-container *ngIf="storeCategories$ | async as storeCategories">
+  <section class="filter-section" [formGroup]="formCategories">
+    <h2>Select categories:</h2>
+    <ng-container *ngIf="isAdmin && isEdit">
+      <div class="edit-wrapper">
+        <!--        <app-create-category-btn></app-create-category-btn>-->
+
+        <ng-container *ngIf="isEditing; else edit">
+          <button (click)="toggleEditing()">
+            <!--            <mat-icon>done</mat-icon>-->
+          </button>
+        </ng-container>
+
+        <ng-template #edit>
+          <button (click)="toggleEditing()">
+
+            <!--            <mat-icon>edit</mat-icon>-->
+          </button>
+        </ng-template>
+      </div>
+    </ng-container>
+
+    <p class="category" *ngFor="let category of storeCategories">
+
+      <span>{{category.id}}</span>
+      <!--          <mat-checkbox [formControlName]="category.id">-->
+      <!--        {{ category.name | uppercase }}-->
+      <!--      </mat-checkbox>-->
+      <!--      <span *ngIf="isEditing" class="edit-span">-->
+      <!--          <app-modify-category-btn-->
+      <!--            [category]="category"-->
+      <!--          ></app-modify-category-btn>-->
+      <!--          <app-delete-category-btn-->
+      <!--            [category]="category"-->
+      <!--          ></app-delete-category-btn>-->
+      <!--        </span>-->
+    </p>
+
+    <!--    <div class="clear-filters">-->
+    <!--      <button-->
+    <!--        class="clear-filters__btn"-->
+    <!--        (click)="clearCategories()"-->
+    <!--      >-->
+    <!--        Clear Categories-->
+    <!--      </button>-->
+    <!--    </div>-->
+  </section>
+</ng-container>

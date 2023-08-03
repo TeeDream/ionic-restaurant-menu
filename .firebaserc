@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "ng-restaurant-menu": {
+      "hosting": {
+        "app": [
+          "ionic-restaurant-menu"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "ng-restaurant-menu"
+  }
+}
