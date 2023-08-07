@@ -22,7 +22,9 @@ import * as MenuActions from '@src/app/menu/store/actions';
 })
 export class CategoryFilterComponent implements OnInit, OnDestroy {
   @Input() isAdmin!: boolean;
-  @Output() productFilters = new EventEmitter<string[]>();
+  @Output() productFilters: EventEmitter<string[]> = new EventEmitter<
+    string[]
+  >();
 
   public storeCategories$: Observable<CategoryInterface[]> =
     this.store.select(selectCategories);
@@ -64,7 +66,6 @@ export class CategoryFilterComponent implements OnInit, OnDestroy {
       .asObservable()
       .pipe(takeUntil(this.updateDestroy$))
       .subscribe(() => {
-        //???
         this.store.dispatch(MenuActions.getCategories());
         this.destroy$.next();
         this.subToForm();

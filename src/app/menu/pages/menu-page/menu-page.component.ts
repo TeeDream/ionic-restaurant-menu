@@ -1,8 +1,8 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { map, Observable, Subject, takeUntil } from 'rxjs';
 import { DocumentData } from '@angular/fire/compat/firestore';
 import { collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { CategoryInterface, ProductInterface } from '@src/app/core/types';
+import { map, Observable, Subject, takeUntil } from 'rxjs';
 import {
   selectCategories,
   selectHotProducts,
@@ -40,6 +40,12 @@ export class MenuPageComponent implements OnInit, OnDestroy {
     queryString: '',
   };
 
+  isModalOpen = false;
+
+  setOpen(isOpen: boolean) {
+    this.isModalOpen = isOpen;
+  }
+
   constructor(
     private dataService: DataService,
     private auth: AuthService,
@@ -60,15 +66,15 @@ export class MenuPageComponent implements OnInit, OnDestroy {
 
   public menuCategoriesHandler(arr: string[]): void {
     this.menuFilters.filters = arr;
-    this.changeRoute();
+    this.changeQueryRoute();
   }
 
   public menuQueryHandler(query: string): void {
     this.menuFilters.queryString = query;
-    this.changeRoute();
+    this.changeQueryRoute();
   }
 
-  private changeRoute(): void {
+  private changeQueryRoute(): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {

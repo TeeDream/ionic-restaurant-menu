@@ -1,0 +1,8 @@
+@use '../mixins' as authForm;
+
+ion-content {
+  .login-wrapper {
+    @include authForm.form;
+    @include authForm.card;
+  }
+}

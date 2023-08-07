@@ -53,7 +53,7 @@ export class AuthService implements OnDestroy {
 
         this.userEmail$.next(aUser?.email ? aUser.email : null);
 
-        console.log(aUser);
+        // console.log(aUser);
         // console.log(this.auth.currentUser);
         // console.log(this.auth.currentUser?.uid, 'uid');
         // getToken() //???

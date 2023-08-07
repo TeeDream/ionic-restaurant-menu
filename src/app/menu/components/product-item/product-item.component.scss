@@ -1,0 +1,40 @@
+ion-card.product-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  //max-width: 400px;
+  //min-width: 300px;
+  //min-height: 300px;
+  height: 100%;
+  margin: 0;
+  //width: 100%;
+  //padding: 10px;
+
+  //mat-card-actions {
+  //  justify-content: space-between;
+  //}
+  //
+  //mat-card-title-group {
+  //  word-break: break-all;
+  //  text-align: center;
+  //  justify-content: center;
+  //
+  //  mat-card-title {
+  //    word-break: normal;
+  //  }
+  //}
+  //
+  img {
+    border-radius: 4px;
+    margin: 10px 1rem;
+  }
+
+  //
+  //mat-card-content, mat-card-subtitle {
+  //  font-size: 18px;
+  //}
+  //
+  //.card-description {
+  //  margin-bottom: 5px;
+  //}
+}

@@ -10,6 +10,7 @@ export const getCategoriesFailure = createAction(
   '[Menu] Get Categories failure',
   props<{ error: string }>()
 );
+
 export const getProducts = createAction(
   '[Menu] Get Products',
   props<{

@@ -1,51 +1,60 @@
-<p>
-  category-filter works!
-</p>
 <ng-container *ngIf="storeCategories$ | async as storeCategories">
-  <section class="filter-section" [formGroup]="formCategories">
-    <h2>Select categories:</h2>
-    <ng-container *ngIf="isAdmin && isEdit">
+  <form [formGroup]="formCategories">
+    <!--    <h2>Select categories:</h2>-->
+    <!--    <ng-container *ngIf="isAdmin && isEdit">-->
+    <ng-container *ngIf="true">
       <div class="edit-wrapper">
         <!--        <app-create-category-btn></app-create-category-btn>-->
 
-        <ng-container *ngIf="isEditing; else edit">
-          <button (click)="toggleEditing()">
-            <!--            <mat-icon>done</mat-icon>-->
-          </button>
-        </ng-container>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button>Create</ion-button>
+          </ion-buttons>
 
-        <ng-template #edit>
-          <button (click)="toggleEditing()">
-
-            <!--            <mat-icon>edit</mat-icon>-->
-          </button>
-        </ng-template>
+          <ion-buttons slot="end">
+            <ng-container *ngIf="isEditing; else edit">
+              <ion-button (click)="toggleEditing()">
+                <ion-icon name="checkmark-outline"></ion-icon>
+              </ion-button>
+            </ng-container>
+            <ng-template #edit>
+              <ion-button (click)="toggleEditing()">
+                Edit
+                <ion-icon name="create-outline"></ion-icon>
+              </ion-button>
+            </ng-template>
+          </ion-buttons>
+        </ion-toolbar>
       </div>
     </ng-container>
 
-    <p class="category" *ngFor="let category of storeCategories">
+    <ion-list [inset]="true">
+      <ion-item class="category" *ngFor="let category of storeCategories">
+        <ion-checkbox [formControlName]="category.id" justify="space-between">
+          {{ category.name | uppercase }}
+        </ion-checkbox>
 
-      <span>{{category.id}}</span>
-      <!--          <mat-checkbox [formControlName]="category.id">-->
-      <!--        {{ category.name | uppercase }}-->
-      <!--      </mat-checkbox>-->
-      <!--      <span *ngIf="isEditing" class="edit-span">-->
-      <!--          <app-modify-category-btn-->
-      <!--            [category]="category"-->
-      <!--          ></app-modify-category-btn>-->
-      <!--          <app-delete-category-btn-->
-      <!--            [category]="category"-->
-      <!--          ></app-delete-category-btn>-->
-      <!--        </span>-->
-    </p>
+        <span *ngIf="isEditing" class="edit-span">
+          <!--                          <app-modify-category-btn-->
+          <!--            [category]="category"-->
+          <!--          ></app-modify-category-btn>-->
+          <ion-button><ion-icon name="create-outline"></ion-icon></ion-button>
 
-    <!--    <div class="clear-filters">-->
-    <!--      <button-->
-    <!--        class="clear-filters__btn"-->
-    <!--        (click)="clearCategories()"-->
-    <!--      >-->
-    <!--        Clear Categories-->
-    <!--      </button>-->
-    <!--    </div>-->
-  </section>
+          <ion-button><ion-icon name="trash-outline"></ion-icon></ion-button>
+          <!--          <app-delete-category-btn-->
+          <!--            [category]="category"-->
+          <!--          ></app-delete-category-btn>-->
+        </span>
+      </ion-item>
+    </ion-list>
+    <ion-button
+      class="ion-padding"
+      color="primary"
+      expand="block"
+      (click)="clearCategories()"
+    >
+      Clear Categories
+    </ion-button>
+
+  </form>
 </ng-container>

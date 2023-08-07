@@ -1,26 +1,109 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
+      <ion-menu-button menu="navigation-menu"></ion-menu-button>
     </ion-buttons>
-    <ion-title>Menu</ion-title>
+    <ion-title>Products Menu</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Menu</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="ion-padding">
+  <app-product-search (filter)="menuQueryHandler($event)"></app-product-search>
 
-  <!--  <div id="container">-->
-  <!--    <p style="color: red">-->
-  <!--      menu-page works!-->
-  <!--    </p>-->
-  <!--    </div>-->
-  
-  <app-category-filter></app-category-filter>
+  <ion-button size="small" expand="block" (click)="setOpen(true)">Open</ion-button>
 
+  <ion-modal [isOpen]="isModalOpen" (didDismiss)="setOpen(false)">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Select categories</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="setOpen(false)">Close</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <app-category-filter
+          (productFilters)="menuCategoriesHandler($event)"
+          [isAdmin]="isAdmin"
+        ></app-category-filter>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+
+  <ng-container *ngIf="storeCategories$ | async as storeCategories">
+    <ng-container *ngIf="isAdmin && isEditing">
+      <!--      <ion-icon name="create-outline"></ion-icon>-->
+      <!--      <ion-icon name="checkmark-outline"></ion-icon>-->
+      <!--      <ion-icon name="log-out-outline"></ion-icon>-->
+      <!--      <ion-icon name="add-outline"></ion-icon>-->
+
+      <!--      <app-create-product-btn-->
+      <!--        [categories]="storeCategories"-->
+      <!--      ></app-create-product-btn>-->
+      <ion-button>Create Item</ion-button>
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="storeProducts$ | async as products">
+    <ng-container *ngIf="storeHotProducts$ | async as hotProducts">
+      <ng-container *ngIf="storeCategories$ | async as storeCategories">
+        <ng-container *ngIf="isFiltersEmpty$ | async">
+          <div class="category-title">Category: Hot</div>
+          <div class="product-wrapper">
+            <ion-grid>
+              <ion-row>
+                <ion-col
+                  size="12"
+                  size-sm="6"
+                  size-lg="4"
+                  *ngFor="let product of hotProducts"
+                >
+                  <app-product-item
+                    [product]="product"
+                    [isAuth]="isAuth$ | async"
+                    [isAdmin]="isAdmin"
+                    [isEditing]="isEditing"
+                    [categories]="storeCategories"
+                  ></app-product-item>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </div>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+
+    <ng-container
+      *ngFor="let category of storeCategories$ | async as storeCategories"
+    >
+      <ng-container *ngIf="isAnyProductsWithinCategory(category, products)">
+        <div class="category-title">
+          Category: {{ category.name | uppercase }}
+        </div>
+
+        <div class="product-wrapper">
+          <ion-grid>
+            <ion-row>
+              <ng-container *ngFor="let product of products">
+                <ion-col size="12" size-lg="4">
+                  <app-product-item
+                    *ngIf="product.categoryId === category.id"
+                    [product]="product"
+                    [isAuth]="isAuth$ | async"
+                    [isAdmin]="isAdmin"
+                    [isEditing]="isEditing"
+                    [categories]="storeCategories"
+                  >
+                  </app-product-item>
+                </ion-col>
+              </ng-container>
+            </ion-row>
+          </ion-grid>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-container>
 </ion-content>
-

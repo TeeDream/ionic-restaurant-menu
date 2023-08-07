@@ -1,14 +1,16 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { MenuStateInterface } from "@src/app/menu/types/menu-state-interface";
+import { MenuStateInterface } from '@src/app/menu/types/menu-state-interface';
 
 export const featureKey = 'menu';
 export const selectFeature =
   createFeatureSelector<MenuStateInterface>(featureKey);
+
 // export const selectFeature = (state: AppStateInterface) => state.menu;
 export const selectIsLoadingCategories = createSelector(
   selectFeature,
   (state) => state.isLoadingCategories
 );
+
 export const selectIsLoadingProducts = createSelector(
   selectFeature,
   (state) => state.isLoadingProducts

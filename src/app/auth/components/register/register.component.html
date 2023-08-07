@@ -1,0 +1,58 @@
+<ion-content class="ion-padding">
+  <div class="register-wrapper">
+    <ion-card class="ion-padding">
+      <h2>Registration Form</h2>
+      <form class="auth-form" [formGroup]="registerGroup" (submit)="onSubmit()">
+        <ion-input
+          type="email"
+          fill="outline"
+          labelPlacement="floating"
+          label="Enter your email"
+          placeholder="pat@example.com"
+          formControlName="email"
+          [clearInput]="true"
+          [errorText]="getErrorMessage('email')"
+        ></ion-input>
+
+        <ion-input
+          [type]="hidePassword ? 'password' : 'text'"
+          fill="outline"
+          labelPlacement="floating"
+          label="Enter your password"
+          placeholder="Mighty_Password"
+          formControlName="password"
+          [clearInput]="true"
+          [errorText]="getErrorMessage('password')"
+        ></ion-input>
+
+        <ion-input
+          [type]="hidePassword ? 'password' : 'text'"
+          fill="outline"
+          labelPlacement="floating"
+          label="Confirm your password"
+          placeholder="Mighty_Password"
+          formControlName="confirmPassword"
+          [clearInput]="true"
+          [errorText]="getErrorMessage('confirmPassword')"
+        ></ion-input>
+
+        <ion-item [button]="true" lines="none" (click)="hidePassword = !hidePassword">
+          <ion-label>
+            {{ hidePassword ? "Show" : "Hide" }} password
+          </ion-label>
+          <ion-icon
+            [name]="hidePassword ? 'eye-off-outline' : 'eye-outline'"
+          ></ion-icon>
+        </ion-item>
+
+        <div class="auth-buttons">
+          <ion-button color="primary" type="submit">Register Me</ion-button>
+
+          <ion-button color="primary" type="button" routerLink="/auth/log-in">
+            Login
+          </ion-button>
+        </div>
+      </form>
+    </ion-card>
+  </div>
+</ion-content>

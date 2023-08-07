@@ -1,6 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, OnDestroy } from '@angular/core';
-import { defer, forkJoin, from, map, Observable, of, retry, Subject, take, } from 'rxjs';
+import {
+  defer,
+  forkJoin,
+  from,
+  map,
+  Observable,
+  of,
+  retry,
+  Subject,
+  take,
+} from 'rxjs';
 import { CategoryInterface, ProductInterface } from '@src/app/core/types';
 import {
   collection,
@@ -17,7 +27,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { DocumentData } from '@angular/fire/compat/firestore';
-import { MenuFiltersInterface } from "@src/app/menu/types/menu-filters.interface";
+import { MenuFiltersInterface } from '@src/app/menu/types/menu-filters.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -35,15 +45,15 @@ export class DataService implements OnDestroy {
   constructor(private http: HttpClient) {}
 
   public getFilteredProducts({
-                               filters,
-                               queryString,
-                             }: MenuFiltersInterface): Observable<ProductInterface[]> {
+    filters,
+    queryString,
+  }: MenuFiltersInterface): Observable<ProductInterface[]> {
     if (!filters.length && !queryString) return of([]);
 
     const createQuery = ({
-                           filters,
-                           queryString,
-                         }: MenuFiltersInterface): QueryFieldFilterConstraint[] => {
+      filters,
+      queryString,
+    }: MenuFiltersInterface): QueryFieldFilterConstraint[] => {
       const query: QueryFieldFilterConstraint[] = [];
 
       if (filters.length) query.push(where('categoryId', 'in', filters));
@@ -153,8 +163,8 @@ export class DataService implements OnDestroy {
   }
 
   public createCategory({
-                          name,
-                        }: Omit<CategoryInterface, 'id'>): Observable<CategoryInterface> {
+    name,
+  }: Omit<CategoryInterface, 'id'>): Observable<CategoryInterface> {
     return defer(() =>
       from(
         setDoc(doc(collection(this.firestore, this.CATEGORIES)), {
