@@ -1,6 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { DocumentData } from '@angular/fire/compat/firestore';
-import { collection, collectionData, Firestore } from '@angular/fire/firestore';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CategoryInterface, ProductInterface } from '@src/app/core/types';
 import { map, Observable, Subject, takeUntil } from 'rxjs';
 import {
@@ -14,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { MenuFiltersInterface } from '@src/app/menu/types/menu-filters.interface';
 import * as MenuActions from '@src/app/menu/store/actions';
+import { ProductActionState } from '@src/app/menu/enums/product-action.state';
 
 @Component({
   selector: 'app-menu-page',
@@ -24,27 +23,27 @@ export class MenuPageComponent implements OnInit, OnDestroy {
   public isAuth$!: Observable<boolean>;
   public isAdmin!: boolean;
   public isEditing = false;
-  private destroy$ = new Subject<void>();
   public isFiltersEmpty$!: Observable<boolean>;
-
-  private item$!: Observable<DocumentData[]>;
-  private firestore: Firestore = inject(Firestore);
+  public menuFilters: MenuFiltersInterface = {
+    filters: [],
+    queryString: '',
+  };
   public storeCategories$: Observable<CategoryInterface[]> =
     this.store.select(selectCategories);
   public storeProducts$: Observable<ProductInterface[]> =
     this.store.select(selectProducts);
   public storeHotProducts$: Observable<ProductInterface[]> =
     this.store.select(selectHotProducts);
-  public menuFilters: MenuFiltersInterface = {
-    filters: [],
-    queryString: '',
-  };
+  private destroy$ = new Subject<void>();
+  public isFilterModalOpen = false;
+  public isProductModalOpen = false;
+  public notify$: Subject<ProductInterface> = new Subject<ProductInterface>();
+  public isProductToastOpen = false;
+  public productToastText = '';
+  public isRemoveActionOpen = false;
 
-  isModalOpen = false;
-
-  setOpen(isOpen: boolean) {
-    this.isModalOpen = isOpen;
-  }
+  public removeActionSubHeader = '';
+  public lastProductToDelete: string | null = null;
 
   constructor(
     private dataService: DataService,
@@ -52,9 +51,63 @@ export class MenuPageComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private store: Store
-  ) {
-    const itemCollection = collection(this.firestore, 'categories');
-    this.item$ = collectionData(itemCollection);
+  ) {}
+
+  public deleteProduct(): void {
+    console.log(this.lastProductToDelete);
+    if (!this.lastProductToDelete) return;
+    this.dataService.deleteProduct(this.lastProductToDelete).subscribe({
+      next: () => {
+        this.dataService.renewProducts$.next();
+        this.setProductToastOpen(true, ProductActionState.DELETE_SUCCESS);
+      },
+      error: () => {
+        this.setProductToastOpen(true, ProductActionState.DELETE_FAILURE);
+      },
+    });
+  }
+
+  public setRemoveAction(isOpen: boolean, product?: ProductInterface): void {
+    if (product) {
+      this.removeActionSubHeader = product.name;
+      this.lastProductToDelete = product.id;
+    }
+
+    this.isRemoveActionOpen = isOpen;
+  }
+
+  public setProductToastOpen(state: boolean, toast?: ProductActionState): void {
+    if (
+      toast === ProductActionState.MODIFY_SUCCESS ||
+      toast === ProductActionState.DELETE_SUCCESS
+    ) {
+      this.productToastText = `Successfully ${
+        toast === ProductActionState.MODIFY_SUCCESS ? 'Modified' : 'Deleted'
+      } the Product!`;
+    }
+
+    if (
+      toast === ProductActionState.MODIFY_FAILURE ||
+      toast === ProductActionState.DELETE_FAILURE
+    ) {
+      this.productToastText = `Failed to ${
+        toast === ProductActionState.MODIFY_FAILURE ? 'Modify' : 'Delete'
+      } the Product!`;
+    }
+
+    this.isProductToastOpen = state;
+  }
+
+  public setOpen(isOpen: boolean): void {
+    this.isFilterModalOpen = isOpen;
+  }
+
+  public setModifyProductOpen(
+    isOpen: boolean,
+    product?: ProductInterface
+  ): void {
+    if (product) this.notify$.next(product);
+    this.isProductModalOpen = isOpen;
   }
 
   public isAnyProductsWithinCategory(
@@ -118,7 +171,6 @@ export class MenuPageComponent implements OnInit, OnDestroy {
         if (data.has('query') && !this.menuFilters.queryString) {
           this.menuFilters.queryString = data.get('query') as string;
         }
-
         this.store.dispatch(MenuActions.getProducts(this.menuFilters));
       });
 
@@ -133,8 +185,6 @@ export class MenuPageComponent implements OnInit, OnDestroy {
     this.setRouteChangeSub();
     this.setUpdateProductsSub();
     this.setUpdateCategoriesSub();
-
-    // this.isAuth$ = this.auth.getLogInStatus$();
     this.isAuth$ = this.auth.getLogInStatus$();
     this.isAdmin = this.auth.isAdmin;
     this.isEditing = this.route.routeConfig?.path === 'menu/edit';

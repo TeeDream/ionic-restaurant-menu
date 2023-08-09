@@ -33,14 +33,13 @@ import { MenuFiltersInterface } from '@src/app/menu/types/menu-filters.interface
   providedIn: 'root',
 })
 export class DataService implements OnDestroy {
-  private readonly BASE_URL = 'http://localhost:3000/';
   private readonly PRODUCTS = 'products';
   private readonly CATEGORIES = 'categories';
   private readonly NAME_FIELD = 'name';
   private readonly HOT_FIELD = 'hot';
   public renewProducts$ = new Subject<void>();
   public renewCategories$ = new Subject<void>();
-  firestore: Firestore = inject(Firestore);
+  public firestore: Firestore = inject(Firestore);
 
   constructor(private http: HttpClient) {}
 

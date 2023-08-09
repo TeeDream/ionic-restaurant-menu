@@ -58,18 +58,28 @@
     position="bottom"
     message="You are logged in!"
     [isOpen]="isLoggedInToastOpen"
-    (didDismiss)="setToastOpen('login',false)"
+    (didDismiss)="setToastOpen('login', false)"
     [duration]="3000"
-    [buttons]="dismissToastButton"
+    [buttons]="[
+      {
+        text: 'Dismiss',
+        role: 'cancel',
+      },
+    ]"
   ></ion-toast>
 
   <ion-toast
     position="bottom"
     message="You are logged out!"
     [isOpen]="isLoggedOutToastOpen"
-    (didDismiss)="setToastOpen('logout',false)"
+    (didDismiss)="setToastOpen('logout', false)"
     [duration]="3000"
-    [buttons]="dismissToastButton"
+    [buttons]="[
+      {
+        text: 'Dismiss',
+        role: 'cancel',
+      },
+    ]"
   ></ion-toast>
 
   <ion-router-outlet id="main-content"></ion-router-outlet>

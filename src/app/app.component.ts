@@ -11,28 +11,21 @@ type Toast = 'login' | 'logout';
 })
 export class AppComponent implements OnInit, OnDestroy {
   public appPages = [
-    {title: 'Main', url: '/folder/main', icon: 'home'},
-    {title: 'Menu', url: '/menu', icon: 'restaurant'},
-    {title: 'Login', url: '/auth/log-in', icon: 'log-in'},
-    {title: 'Register', url: '/auth/register', icon: 'person-add'},
+    { title: 'Main', url: '/folder/main', icon: 'home' },
+    { title: 'Menu', url: '/menu', icon: 'restaurant' },
+    { title: 'Login', url: '/auth/log-in', icon: 'log-in' },
+    { title: 'Register', url: '/auth/register', icon: 'person-add' },
   ];
   public labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
   public loginStatus$: Observable<boolean> = this.auth.getLogInStatus$();
   public userEmail$: Observable<string | null> =
     this.auth.userEmail$.asObservable();
   private destroy$: Subject<void> = new Subject<void>();
-  public isLoggedInToastOpen: boolean = false;
-  public isLoggedOutToastOpen: boolean = false;
-  private wasLoggedIn: boolean = false;
-  public dismissToastButton = [
-    {
-      text: 'Dismiss',
-      role: 'cancel',
-    },
-  ];
+  public isLoggedInToastOpen = false;
+  public isLoggedOutToastOpen = false;
+  private wasLoggedIn = false;
 
-  constructor(private auth: AuthService) {
-  }
+  constructor(private auth: AuthService) {}
 
   public logOut(): void {
     this.auth.logOut();

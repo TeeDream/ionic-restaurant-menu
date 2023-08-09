@@ -1,0 +1,17 @@
+.modify-product-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+
+  ion-card {
+    overflow-y: auto;
+    width: 100%;
+
+    .buttons-wrapper {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}

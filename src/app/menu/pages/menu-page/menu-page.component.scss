@@ -5,6 +5,11 @@
   //font-family: "Roboto Serif", serif;
 }
 
+.buttons-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
 ion-grid {
   --ion-grid-padding: 0;
 }

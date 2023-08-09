@@ -13,6 +13,7 @@ import { CategoryFilterComponent } from '@src/app/menu/components/category-filte
 import { ProductItemComponent } from '@src/app/menu/components/product-item/product-item.component';
 import { ProductSearchComponent } from '@src/app/menu/components/product-search/product-search.component';
 import { SharedModule } from '@src/app/shared/shared.module';
+import { ProductEditModalComponent } from '@src/app/menu/components/product-edit-modal/product-edit-modal.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { SharedModule } from '@src/app/shared/shared.module';
     CategoryFilterComponent,
     ProductItemComponent,
     ProductSearchComponent,
+    ProductEditModalComponent,
   ],
   imports: [
     CommonModule,

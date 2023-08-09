@@ -10,9 +10,21 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <app-product-search (filter)="menuQueryHandler($event)"></app-product-search>
 
-  <ion-button size="small" expand="block" (click)="setOpen(true)">Open</ion-button>
+  <div class="buttons-wrapper ion-padding">
+    <ion-button (click)="setOpen(true)">
+      <ion-icon name="filter-outline"></ion-icon>
+    </ion-button>
 
-  <ion-modal [isOpen]="isModalOpen" (didDismiss)="setOpen(false)">
+    <!--  <ng-container *ngIf="storeCategories$ | async as storeCategories">-->
+    <!--    <ng-container *ngIf="isAdmin && isEditing">-->
+    <ion-button>
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-button>
+    <!--    </ng-container>-->
+    <!--  </ng-container>-->
+  </div>
+
+  <ion-modal [isOpen]="isFilterModalOpen" (didDismiss)="setOpen(false)">
     <ng-template>
       <ion-header>
         <ion-toolbar>
@@ -22,7 +34,6 @@
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-
       <ion-content>
         <app-category-filter
           (productFilters)="menuCategoriesHandler($event)"
@@ -32,20 +43,13 @@
     </ng-template>
   </ion-modal>
 
-
-  <ng-container *ngIf="storeCategories$ | async as storeCategories">
-    <ng-container *ngIf="isAdmin && isEditing">
-      <!--      <ion-icon name="create-outline"></ion-icon>-->
-      <!--      <ion-icon name="checkmark-outline"></ion-icon>-->
-      <!--      <ion-icon name="log-out-outline"></ion-icon>-->
-      <!--      <ion-icon name="add-outline"></ion-icon>-->
-
-      <!--      <app-create-product-btn-->
-      <!--        [categories]="storeCategories"-->
-      <!--      ></app-create-product-btn>-->
-      <ion-button>Create Item</ion-button>
-    </ng-container>
-  </ng-container>
+  <app-product-edit-modal
+    [isProductModalOpen]="isProductModalOpen"
+    (setModifyProductOpen)="setModifyProductOpen($event)"
+    [storeCategories]="storeCategories$ | async"
+    [notify$]="notify$.asObservable()"
+    (setProductToast)="setProductToastOpen(true, $event)"
+  ></app-product-edit-modal>
 
   <ng-container *ngIf="storeProducts$ | async as products">
     <ng-container *ngIf="storeHotProducts$ | async as hotProducts">
@@ -62,6 +66,7 @@
                   *ngFor="let product of hotProducts"
                 >
                   <app-product-item
+                    (openModal)="setModifyProductOpen(true, $event)"
                     [product]="product"
                     [isAuth]="isAuth$ | async"
                     [isAdmin]="isAdmin"
@@ -91,6 +96,8 @@
                 <ion-col size="12" size-lg="4">
                   <app-product-item
                     *ngIf="product.categoryId === category.id"
+                    (openModal)="setModifyProductOpen(true, $event)"
+                    (openDeleteAction)="setRemoveAction(true, $event)"
                     [product]="product"
                     [isAuth]="isAuth$ | async"
                     [isAdmin]="isAdmin"
@@ -106,4 +113,39 @@
       </ng-container>
     </ng-container>
   </ng-container>
+
+  <ion-action-sheet
+    [isOpen]="isRemoveActionOpen"
+    (didDismiss)="setRemoveAction(false)"
+    header="Do you really want to delete this product?"
+    [subHeader]="removeActionSubHeader"
+    [buttons]="[
+      {
+        text: 'Delete',
+        role: 'destructive',
+        handler: deleteProduct.bind(this),
+        data: {
+          action: 'delete',
+        },
+      },
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+    ]"
+  ></ion-action-sheet>
+
+  <ion-toast
+    position="bottom"
+    [message]="productToastText"
+    [isOpen]="isProductToastOpen"
+    (didDismiss)="setProductToastOpen(false)"
+    [duration]="3000"
+    [buttons]="[
+      {
+        text: 'Dismiss',
+        role: 'cancel',
+      },
+    ]"
+  ></ion-toast>
 </ion-content>

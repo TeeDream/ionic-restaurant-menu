@@ -1,7 +1,9 @@
 <ion-card class="product-card">
   <ion-card-header>
     <ion-card-title>{{ product.name }}</ion-card-title>
-    <ion-card-subtitle>Category: {{ product.category.name | titlecase }}</ion-card-subtitle>
+    <ion-card-subtitle
+    >Category: {{ product.category.name | titlecase }}</ion-card-subtitle
+    >
   </ion-card-header>
 
   <img
@@ -14,16 +16,25 @@
     <ion-card-subtitle class="card-description">Description</ion-card-subtitle>
     <p *ngIf="product.description">{{ product.description }}</p>
     <p *ngIf="!product.description">There is no description yet.</p>
-    <ion-card-title>Price: {{ product.price | currency:'UAH':'symbol-narrow': '1.0-2' }}
+    <ion-card-title
+    >Price: {{ product.price | currency: "UAH":"symbol-narrow":"1.0-2" }}
     </ion-card-title>
   </ion-card-content>
 
-  <ng-container *ngIf="isAdmin && isEditing">
-    <ng-container *ngIf="isAuth">
-      <ion-button fill="clear">Action 1</ion-button>
-      <!--      <app-menu-dialog [categories]="categories" [receivedProduct]="product"></app-menu-dialog>-->
-      <ion-button fill="clear">Action 2</ion-button>
-      <!--      <app-delete-product [receivedProduct]="product"></app-delete-product>-->
-    </ng-container>
-  </ng-container>
+  <!--  <ng-container *ngIf="isAdmin && isEditing">-->
+  <!--    <ng-container *ngIf="isAuth">-->
+  <div class="buttons-wrapper ion-padding">
+    <ion-button type="button" (click)="openModal.emit(product)"
+    >Modify
+    </ion-button>
+
+    <ion-button
+      (click)="openDeleteAction.emit(product)"
+      color="warning"
+    >Delete
+    </ion-button>
+  </div>
+
+  <!--    </ng-container>-->
+  <!--  </ng-container>-->
 </ion-card>
