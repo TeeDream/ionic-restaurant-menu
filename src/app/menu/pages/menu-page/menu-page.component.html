@@ -15,13 +15,11 @@
       <ion-icon name="filter-outline"></ion-icon>
     </ion-button>
 
-    <!--  <ng-container *ngIf="storeCategories$ | async as storeCategories">-->
     <!--    <ng-container *ngIf="isAdmin && isEditing">-->
-    <ion-button>
+    <ion-button (click)="setCreateProductOpen(true)">
       <ion-icon name="add-outline"></ion-icon>
     </ion-button>
     <!--    </ng-container>-->
-    <!--  </ng-container>-->
   </div>
 
   <ion-modal [isOpen]="isFilterModalOpen" (didDismiss)="setOpen(false)">
@@ -43,6 +41,13 @@
     </ng-template>
   </ion-modal>
 
+  <app-product-create-modal
+    [isCreateProductModalOpen]="isCreateProductModalOpen"
+    [storeCategories]="storeCategories$ | async"
+    (setCreateProductOpen)="setCreateProductOpen($event)"
+    (setProductToastOpen)="setProductToastOpen(true, $event)"
+  ></app-product-create-modal>
+
   <app-product-edit-modal
     [isProductModalOpen]="isProductModalOpen"
     (setModifyProductOpen)="setModifyProductOpen($event)"
@@ -52,6 +57,19 @@
   ></app-product-edit-modal>
 
   <ng-container *ngIf="storeProducts$ | async as products">
+    <ng-container
+      *ngIf="
+        (isFiltersEmpty$ | async) === false &&
+        (storeProductsIsLoading$ | async) === false &&
+        !products.length
+      "
+    >
+      <ion-item>
+        <div>Sorry, but there are no products that satisfies query or filter...</div>
+      </ion-item>
+    </ng-container>
+
+    <!--    <div *ngIf="isFiltersEmpty$ | async">No items that corresponds with query or filter!</div>-->
     <ng-container *ngIf="storeHotProducts$ | async as hotProducts">
       <ng-container *ngIf="storeCategories$ | async as storeCategories">
         <ng-container *ngIf="isFiltersEmpty$ | async">

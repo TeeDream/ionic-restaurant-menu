@@ -14,6 +14,7 @@ import { ProductItemComponent } from '@src/app/menu/components/product-item/prod
 import { ProductSearchComponent } from '@src/app/menu/components/product-search/product-search.component';
 import { SharedModule } from '@src/app/shared/shared.module';
 import { ProductEditModalComponent } from '@src/app/menu/components/product-edit-modal/product-edit-modal.component';
+import { ProductCreateModalComponent } from '@src/app/menu/components/product-create-modal/product-create-modal.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { ProductEditModalComponent } from '@src/app/menu/components/product-edit
     ProductItemComponent,
     ProductSearchComponent,
     ProductEditModalComponent,
+    ProductCreateModalComponent,
   ],
   imports: [
     CommonModule,

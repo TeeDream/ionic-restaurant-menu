@@ -4,6 +4,7 @@ import { map, Observable, Subject, takeUntil } from 'rxjs';
 import {
   selectCategories,
   selectHotProducts,
+  selectIsLoadingProducts,
   selectProducts,
 } from '@src/app/menu/store/selectors';
 import { DataService } from '@src/app/core/services/data.service';
@@ -34,9 +35,13 @@ export class MenuPageComponent implements OnInit, OnDestroy {
     this.store.select(selectProducts);
   public storeHotProducts$: Observable<ProductInterface[]> =
     this.store.select(selectHotProducts);
+  public storeProductsIsLoading$: Observable<boolean> = this.store.select(
+    selectIsLoadingProducts
+  );
   private destroy$ = new Subject<void>();
   public isFilterModalOpen = false;
   public isProductModalOpen = false;
+  public isCreateProductModalOpen = false;
   public notify$: Subject<ProductInterface> = new Subject<ProductInterface>();
   public isProductToastOpen = false;
   public productToastText = '';
@@ -54,8 +59,8 @@ export class MenuPageComponent implements OnInit, OnDestroy {
   ) {}
 
   public deleteProduct(): void {
-    console.log(this.lastProductToDelete);
     if (!this.lastProductToDelete) return;
+
     this.dataService.deleteProduct(this.lastProductToDelete).subscribe({
       next: () => {
         this.dataService.renewProducts$.next();
@@ -79,19 +84,29 @@ export class MenuPageComponent implements OnInit, OnDestroy {
   public setProductToastOpen(state: boolean, toast?: ProductActionState): void {
     if (
       toast === ProductActionState.MODIFY_SUCCESS ||
-      toast === ProductActionState.DELETE_SUCCESS
+      toast === ProductActionState.DELETE_SUCCESS ||
+      toast === ProductActionState.CREATE_SUCCESS
     ) {
       this.productToastText = `Successfully ${
-        toast === ProductActionState.MODIFY_SUCCESS ? 'Modified' : 'Deleted'
+        toast === ProductActionState.MODIFY_SUCCESS
+          ? 'Modified'
+          : toast === ProductActionState.DELETE_SUCCESS
+          ? 'Deleted'
+          : 'Created'
       } the Product!`;
     }
 
     if (
       toast === ProductActionState.MODIFY_FAILURE ||
-      toast === ProductActionState.DELETE_FAILURE
+      toast === ProductActionState.DELETE_FAILURE ||
+      toast === ProductActionState.CREATE_FAILURE
     ) {
       this.productToastText = `Failed to ${
-        toast === ProductActionState.MODIFY_FAILURE ? 'Modify' : 'Delete'
+        toast === ProductActionState.MODIFY_FAILURE
+          ? 'Modify'
+          : toast === ProductActionState.DELETE_FAILURE
+          ? 'Delete'
+          : 'Create'
       } the Product!`;
     }
 
@@ -108,6 +123,10 @@ export class MenuPageComponent implements OnInit, OnDestroy {
   ): void {
     if (product) this.notify$.next(product);
     this.isProductModalOpen = isOpen;
+  }
+
+  public setCreateProductOpen(isOpen: boolean): void {
+    this.isCreateProductModalOpen = isOpen;
   }
 
   public isAnyProductsWithinCategory(

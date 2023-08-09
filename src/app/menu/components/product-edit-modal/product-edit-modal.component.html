@@ -7,7 +7,7 @@
       <ion-toolbar>
         <ion-title>Modify Product</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="setModifyProductOpen.emit(false)"
+          <ion-button (click)="onDismiss()"
           >Close
           </ion-button>
         </ion-buttons>
@@ -18,7 +18,7 @@
       <ng-container
         *ngIf="modifyProductGroup && selectedProductToModify as product"
       >
-        <div class="modify-product-wrapper">
+        <div class="modal-product-card-wrapper">
           <ion-card>
             <ion-card-content>
               <form [formGroup]="modifyProductGroup" (submit)="onChangesSubmit()">
@@ -67,14 +67,9 @@
 
                 <br/>
 
-                <div class="buttons-wrapper">
-                  <ion-button (click)="onDismiss()" color="primary">
-                    No Thanks
-                  </ion-button>
-                  <ion-button type="submit" color="warning">
-                    Save Changes
-                  </ion-button>
-                </div>
+                <ion-button size="block" type="submit" color="warning">
+                  Save Changes
+                </ion-button>
               </form>
             </ion-card-content>
           </ion-card>
