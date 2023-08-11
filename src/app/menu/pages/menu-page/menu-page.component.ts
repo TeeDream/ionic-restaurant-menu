@@ -13,7 +13,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { MenuFiltersInterface } from '@src/app/menu/types/menu-filters.interface';
 import * as MenuActions from '@src/app/menu/store/actions';
-import { ProductActionState } from '@src/app/menu/enums/product-action.state';
+import { ProductType } from '@src/app/menu/enums/product.type';
+import { TitleCasePipe } from '@angular/common';
+import { CrudToastActionInterface } from '@src/app/menu/types/crud-toast-action.interface';
+import { ProductActionResult } from '@src/app/menu/enums/product-action-result';
+import { ProductActionType } from '@src/app/menu/enums/product-action-type';
 
 @Component({
   selector: 'app-menu-page',
@@ -38,24 +42,25 @@ export class MenuPageComponent implements OnInit, OnDestroy {
   public storeProductsIsLoading$: Observable<boolean> = this.store.select(
     selectIsLoadingProducts
   );
-  private destroy$ = new Subject<void>();
   public isFilterModalOpen = false;
   public isProductModalOpen = false;
   public isCreateProductModalOpen = false;
-  public notify$: Subject<ProductInterface> = new Subject<ProductInterface>();
-  public isProductToastOpen = false;
-  public productToastText = '';
+  public isCRUDToastOpen = false;
+  public crudToastText = '';
   public isRemoveActionOpen = false;
-
   public removeActionSubHeader = '';
   public lastProductToDelete: string | null = null;
+  protected readonly ProductType = ProductType;
+  private destroy$: Subject<void> = new Subject<void>();
+  public notify$: Subject<ProductInterface> = new Subject<ProductInterface>();
 
   constructor(
     private dataService: DataService,
     private auth: AuthService,
-    private route: ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
     private router: Router,
-    private store: Store
+    private store: Store,
+    private titleCasePipe: TitleCasePipe
   ) {}
 
   public deleteProduct(): void {
@@ -64,10 +69,16 @@ export class MenuPageComponent implements OnInit, OnDestroy {
     this.dataService.deleteProduct(this.lastProductToDelete).subscribe({
       next: () => {
         this.dataService.renewProducts$.next();
-        this.setProductToastOpen(true, ProductActionState.DELETE_SUCCESS);
+        this.setCRUDToastOpen(true, ProductType.DISH, {
+          action: ProductActionType.DELETE,
+          result: ProductActionResult.SUCCESS,
+        });
       },
       error: () => {
-        this.setProductToastOpen(true, ProductActionState.DELETE_FAILURE);
+        this.setCRUDToastOpen(true, ProductType.DISH, {
+          action: ProductActionType.DELETE,
+          result: ProductActionResult.FAILURE,
+        });
       },
     });
   }
@@ -81,36 +92,67 @@ export class MenuPageComponent implements OnInit, OnDestroy {
     this.isRemoveActionOpen = isOpen;
   }
 
-  public setProductToastOpen(state: boolean, toast?: ProductActionState): void {
-    if (
-      toast === ProductActionState.MODIFY_SUCCESS ||
-      toast === ProductActionState.DELETE_SUCCESS ||
-      toast === ProductActionState.CREATE_SUCCESS
-    ) {
-      this.productToastText = `Successfully ${
-        toast === ProductActionState.MODIFY_SUCCESS
-          ? 'Modified'
-          : toast === ProductActionState.DELETE_SUCCESS
-          ? 'Deleted'
-          : 'Created'
-      } the Product!`;
+  private createToastText(
+    productType: ProductType,
+    actionResult: CrudToastActionInterface
+  ): string {
+    const actionInSimpleForm = this.titleCasePipe.transform(
+      actionResult.action
+    );
+    const productTypeTitleCase = this.titleCasePipe.transform(productType);
+
+    return `${
+      actionResult.result === ProductActionResult.SUCCESS
+        ? 'Successfully'
+        : actionResult.result === ProductActionResult.FAILURE
+        ? 'Failed to'
+        : 'Unknown Result'
+    } ${
+      actionResult.action === ProductActionType.MODIFY
+        ? `${
+            actionResult.result === ProductActionResult.SUCCESS
+              ? 'Modified'
+              : actionInSimpleForm
+          }`
+        : actionResult.action === ProductActionType.DELETE
+        ? `${
+            actionResult.result === ProductActionResult.SUCCESS
+              ? 'Deleted'
+              : actionInSimpleForm
+          }`
+        : actionResult.action === ProductActionType.CREATE
+        ? `${
+            actionResult.result === ProductActionResult.SUCCESS
+              ? 'Created'
+              : actionInSimpleForm
+          }`
+        : 'fired an Unknown Action'
+    } the ${
+      productType === ProductType.DISH
+        ? productTypeTitleCase
+        : productType === ProductType.CATEGORY
+        ? productTypeTitleCase
+        : 'Unknown Type'
+    }!`;
+  }
+
+  public setCRUDToastOpen(state: boolean): void;
+  public setCRUDToastOpen(
+    state: boolean,
+    productType: ProductType,
+    actionResult: CrudToastActionInterface
+  ): void;
+  public setCRUDToastOpen(
+    state: boolean,
+    productType?: ProductType,
+    actionResult?: CrudToastActionInterface
+  ): void {
+    if (state && this.isCRUDToastOpen) this.isCRUDToastOpen = false;
+    if (productType && actionResult?.action && actionResult.result) {
+      this.crudToastText = this.createToastText(productType, actionResult);
     }
 
-    if (
-      toast === ProductActionState.MODIFY_FAILURE ||
-      toast === ProductActionState.DELETE_FAILURE ||
-      toast === ProductActionState.CREATE_FAILURE
-    ) {
-      this.productToastText = `Failed to ${
-        toast === ProductActionState.MODIFY_FAILURE
-          ? 'Modify'
-          : toast === ProductActionState.DELETE_FAILURE
-          ? 'Delete'
-          : 'Create'
-      } the Product!`;
-    }
-
-    this.isProductToastOpen = state;
+    this.isCRUDToastOpen = state;
   }
 
   public setOpen(isOpen: boolean): void {
@@ -148,7 +190,7 @@ export class MenuPageComponent implements OnInit, OnDestroy {
 
   private changeQueryRoute(): void {
     this.router.navigate([], {
-      relativeTo: this.route,
+      relativeTo: this.activatedRoute,
       queryParams: {
         category: this.menuFilters.filters.length
           ? this.menuFilters.filters
@@ -180,7 +222,7 @@ export class MenuPageComponent implements OnInit, OnDestroy {
   }
 
   private setRouteChangeSub(): void {
-    this.route.queryParamMap
+    this.activatedRoute.queryParamMap
       .pipe(takeUntil(this.destroy$))
       .subscribe((data): void => {
         if (data.has('category') && !this.menuFilters.filters.length) {
@@ -190,10 +232,11 @@ export class MenuPageComponent implements OnInit, OnDestroy {
         if (data.has('query') && !this.menuFilters.queryString) {
           this.menuFilters.queryString = data.get('query') as string;
         }
+
         this.store.dispatch(MenuActions.getProducts(this.menuFilters));
       });
 
-    this.isFiltersEmpty$ = this.route.queryParamMap.pipe(
+    this.isFiltersEmpty$ = this.activatedRoute.queryParamMap.pipe(
       map((data) => !data.keys.length)
     );
   }
@@ -206,7 +249,7 @@ export class MenuPageComponent implements OnInit, OnDestroy {
     this.setUpdateCategoriesSub();
     this.isAuth$ = this.auth.getLogInStatus$();
     this.isAdmin = this.auth.isAdmin;
-    this.isEditing = this.route.routeConfig?.path === 'menu/edit';
+    this.isEditing = this.activatedRoute.routeConfig?.path === 'menu/edit';
   }
 
   public ngOnDestroy(): void {

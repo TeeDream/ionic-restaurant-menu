@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CategoryInterface, ProductInterface } from '@src/app/core/types';
+import { ProductInterface } from '@src/app/core/types';
 
 @Component({
   selector: 'app-product-item',
@@ -13,7 +13,6 @@ export class ProductItemComponent {
   @Input() isAuth!: boolean | null;
   @Input() isAdmin!: boolean;
   @Input() isEditing!: boolean;
-  @Input() categories!: CategoryInterface[];
   @Output() openDeleteAction: EventEmitter<ProductInterface> =
     new EventEmitter<ProductInterface>();
 }

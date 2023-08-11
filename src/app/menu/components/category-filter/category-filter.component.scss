@@ -1,13 +1,6 @@
 .edit-wrapper {
   display: flex;
   justify-content: space-evenly;
-  //margin-bottom: 20px;
-}
-
-.category {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .edit-span {
@@ -24,11 +17,21 @@ p {
   padding: 0 5px;
 }
 
-//
-//.clear-filters {
-//  margin: 0 10px;
-//
-//  &__btn {
-//    width: 100%;
-//  }
-//}
+.text {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    scale: 1;
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

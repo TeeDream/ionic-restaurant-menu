@@ -1,0 +1,31 @@
+<ion-modal [isOpen]="isModalOpen">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="setModalOpen.emit(false)">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Create Category</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="onModalSubmit()" [strong]="true"
+          >Confirm
+          </ion-button
+          >
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <ion-item>
+        <ion-input
+          [formControl]="categoryName"
+          labelPlacement="floating"
+          label="Category Name"
+          type="text"
+          placeholder="Tasty Things"
+          errorText="Category Name is required!"
+        ></ion-input>
+      </ion-item>
+    </ion-content>
+  </ng-template>
+</ion-modal>

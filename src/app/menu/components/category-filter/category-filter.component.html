@@ -1,14 +1,13 @@
 <ng-container *ngIf="storeCategories$ | async as storeCategories">
   <form [formGroup]="formCategories">
-    <!--    <h2>Select categories:</h2>-->
-    <!--    <ng-container *ngIf="isAdmin && isEdit">-->
     <ng-container *ngIf="true">
+      <!--        <ng-container *ngIf="isAdmin && isEdit"></ng-container>-->
       <div class="edit-wrapper">
-        <!--        <app-create-category-btn></app-create-category-btn>-->
-
         <ion-toolbar>
           <ion-buttons slot="start">
-            <ion-button>Create</ion-button>
+            <ion-button (click)="setCreateCategoryModal(true)">
+              <ion-icon name="add-outline"></ion-icon>
+            </ion-button>
           </ion-buttons>
 
           <ion-buttons slot="end">
@@ -19,7 +18,6 @@
             </ng-container>
             <ng-template #edit>
               <ion-button (click)="toggleEditing()">
-                Edit
                 <ion-icon name="create-outline"></ion-icon>
               </ion-button>
             </ng-template>
@@ -28,33 +26,53 @@
       </div>
     </ng-container>
 
+    <ion-alert
+      [isOpen]="isAlertOpen"
+      [header]="'Want to delete ' + currentCategoryToDelete?.name + ' category?'"
+      [buttons]="alertButtons"
+      (didDismiss)="setAlertOpen(false)"
+    ></ion-alert>
+
+    <app-category-create-modal
+      (openToast)="setCategoryToastOpen.emit($event)"
+      [isModalOpen]="isCreateCategoryModalOpen"
+      (setModalOpen)="setCreateCategoryModal($event)"
+    ></app-category-create-modal>
+
     <ion-list [inset]="true">
-      <ion-item class="category" *ngFor="let category of storeCategories">
-        <ion-checkbox [formControlName]="category.id" justify="space-between">
-          {{ category.name | uppercase }}
-        </ion-checkbox>
+      <ion-item *ngFor="let category of storeCategories">
+        <ion-label>
+          <ion-checkbox
+            [ngClass]="{ text: isEditing }"
+            [formControlName]="category.id"
+            aria-label="Category Checkbox"
+          >
+            {{ category.name | uppercase }}
+          </ion-checkbox>
+        </ion-label>
 
         <span *ngIf="isEditing" class="edit-span">
-          <!--                          <app-modify-category-btn-->
-          <!--            [category]="category"-->
-          <!--          ></app-modify-category-btn>-->
-          <ion-button><ion-icon name="create-outline"></ion-icon></ion-button>
+          <ion-button>
+            <ion-icon name="create-outline"></ion-icon>
+          </ion-button>
 
-          <ion-button><ion-icon name="trash-outline"></ion-icon></ion-button>
-          <!--          <app-delete-category-btn-->
-          <!--            [category]="category"-->
-          <!--          ></app-delete-category-btn>-->
+          <ion-button (click)="setAlertOpen(true, category)">
+            <ion-icon name="trash-outline"></ion-icon>
+          </ion-button>
         </span>
+
+
       </ion-item>
     </ion-list>
+
     <ion-button
       class="ion-padding"
       color="primary"
       expand="block"
+      [disabled]="isEditing"
       (click)="clearCategories()"
     >
       Clear Categories
     </ion-button>
-
   </form>
 </ng-container>

@@ -4,12 +4,13 @@ import {
   Input,
   OnChanges,
   Output,
-  SimpleChanges,
 } from '@angular/core';
 import { DataService } from '@src/app/core/services/data.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { CategoryInterface } from '@src/app/core/types';
-import { ProductActionState } from '@src/app/menu/enums/product-action.state';
+import { CrudToastActionInterface } from '@src/app/menu/types/crud-toast-action.interface';
+import { ProductActionResult } from '@src/app/menu/enums/product-action-result';
+import { ProductActionType } from '@src/app/menu/enums/product-action-type';
 
 @Component({
   selector: 'app-product-create-modal',
@@ -21,8 +22,8 @@ export class ProductCreateModalComponent implements OnChanges {
   @Input() isCreateProductModalOpen!: boolean;
   @Output() setCreateProductOpen: EventEmitter<boolean> =
     new EventEmitter<boolean>();
-  @Output() setProductToastOpen: EventEmitter<ProductActionState> =
-    new EventEmitter<ProductActionState>();
+  @Output() setProductToastOpen: EventEmitter<CrudToastActionInterface> =
+    new EventEmitter<CrudToastActionInterface>();
   public createProductGroup = new FormGroup({
     name: new FormControl('', [Validators.required]),
     price: new FormControl(0, [Validators.required]),
@@ -49,16 +50,22 @@ export class ProductCreateModalComponent implements OnChanges {
         next: () => {
           this.createProductGroup.reset();
           this.setCreateProductOpen.emit(false);
-          this.setProductToastOpen.emit(ProductActionState.CREATE_SUCCESS);
+          this.setProductToastOpen.emit({
+            result: ProductActionResult.SUCCESS,
+            action: ProductActionType.CREATE,
+          });
           this.dataService.renewProducts$.next();
         },
         error: () => {
-          this.setProductToastOpen.emit(ProductActionState.CREATE_FAILURE);
+          this.setProductToastOpen.emit({
+            result: ProductActionResult.FAILURE,
+            action: ProductActionType.CREATE,
+          });
         },
       });
   }
 
-  public ngOnChanges(changes: SimpleChanges): void {
+  public ngOnChanges(): void {
     if (this.storeCategories?.length) {
       this.createProductGroup
         .get('category')

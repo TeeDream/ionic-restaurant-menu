@@ -7,13 +7,16 @@ import {
   Output,
 } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { debounceTime, map, Observable, Subject, takeUntil } from 'rxjs';
+import { debounceTime, map, Observable, Subject, take, takeUntil } from 'rxjs';
 import { CategoryInterface } from '@src/app/core/types';
 import { DataService } from '@src/app/core/services/data.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { selectCategories } from '@src/app/menu/store/selectors';
 import { Store } from '@ngrx/store';
 import * as MenuActions from '@src/app/menu/store/actions';
+import { CrudToastActionInterface } from '@src/app/menu/types/crud-toast-action.interface';
+import { ProductActionResult } from '@src/app/menu/enums/product-action-result';
+import { ProductActionType } from '@src/app/menu/enums/product-action-type';
 
 @Component({
   selector: 'app-category-filter',
@@ -22,9 +25,11 @@ import * as MenuActions from '@src/app/menu/store/actions';
 })
 export class CategoryFilterComponent implements OnInit, OnDestroy {
   @Input() isAdmin!: boolean;
-  @Output() productFilters: EventEmitter<string[]> = new EventEmitter<
+  @Output() menuCategoriesHandler: EventEmitter<string[]> = new EventEmitter<
     string[]
   >();
+  @Output() setCategoryToastOpen: EventEmitter<CrudToastActionInterface> =
+    new EventEmitter<CrudToastActionInterface>();
 
   public storeCategories$: Observable<CategoryInterface[]> =
     this.store.select(selectCategories);
@@ -33,24 +38,86 @@ export class CategoryFilterComponent implements OnInit, OnDestroy {
   public isEdit = false;
   private destroy$ = new Subject<void>();
   private updateDestroy$ = new Subject<void>();
+  public isAlertOpen = false;
+  public currentCategoryToDelete: CategoryInterface | null = null;
+  public isCreateCategoryModalOpen = false;
+  public alertButtons = [
+    {
+      text: 'Cancel',
+      role: 'cancel',
+    },
+    {
+      text: 'OK',
+      role: 'confirm',
+      handler: () => {
+        if (!this.currentCategoryToDelete) return;
+        this.deleteCategory(this.currentCategoryToDelete);
+      },
+    },
+  ];
 
   constructor(
     private fb: FormBuilder,
     private dataService: DataService,
-    private route: ActivatedRoute,
+    private activatedRoute: ActivatedRoute,
+    private router: Router,
     private store: Store
   ) {}
 
-  private createFormCategory(categories: CategoryInterface[]) {
-    return categories.reduce(
-      (acc, category) => {
-        acc[category.id.toString()] = false;
-        return acc;
+  private deleteCategory(category: CategoryInterface): void {
+    this.dataService.deleteCategory(category).subscribe({
+      next: () => {
+        this.updateURLAfterDelete();
+
+        this.dataService.renewCategories$.next();
+        this.setCategoryToastOpen.emit({
+          action: ProductActionType.DELETE,
+          result: ProductActionResult.SUCCESS,
+        });
+        this.currentCategoryToDelete = null;
       },
-      {} as {
-        [key: string]: boolean;
-      }
-    );
+      error: () => {
+        this.setCategoryToastOpen.emit({
+          action: ProductActionType.DELETE,
+          result: ProductActionResult.FAILURE,
+        });
+      },
+    });
+  }
+
+  private updateURLAfterDelete(): void {
+    this.activatedRoute.queryParamMap
+      .pipe(take(1), takeUntil(this.destroy$))
+      .subscribe((params) => {
+        const filterParams = params.getAll('category');
+        const shouldUpdateURL = !!filterParams.find(
+          (category) => category === this.currentCategoryToDelete?.id
+        );
+
+        if (this.currentCategoryToDelete && shouldUpdateURL) {
+          const query = params.get('query');
+          const filtersAfterDelete = filterParams.filter(
+            (category) => category !== this.currentCategoryToDelete?.id
+          );
+
+          this.router.navigate([], {
+            relativeTo: this.activatedRoute,
+            queryParams: {
+              category: filtersAfterDelete.length ? filtersAfterDelete : null,
+              query: query?.length ? query : null,
+            },
+          });
+        }
+      });
+  }
+
+  public setCreateCategoryModal(isOpen: boolean): void {
+    this.isCreateCategoryModalOpen = isOpen;
+  }
+
+  public setAlertOpen(isOpen: boolean, category?: CategoryInterface): void {
+    if (category) this.currentCategoryToDelete = category;
+    this.isAlertOpen = isOpen;
   }
 
   public clearCategories(): void {
@@ -61,52 +128,65 @@ export class CategoryFilterComponent implements OnInit, OnDestroy {
     this.isEditing = !this.isEditing;
   }
 
+  private createFormCategory(categories: CategoryInterface[]): {
+    [key: string]: boolean;
+  } {
+    let paramsArray: string[] = [];
+
+    this.activatedRoute.queryParamMap.pipe(take(1)).subscribe((params) => {
+      paramsArray = params.getAll('category');
+    });
+
+    return categories.reduce(
+      (acc, category) => {
+        acc[category.id.toString()] = !!paramsArray.find(
+          (param) => param === category.id
+        );
+        return acc;
+      },
+      {} as {
+        [key: string]: boolean;
+      }
+    );
+  }
+
   private setUpdateSub(): void {
     this.dataService.renewCategories$
       .asObservable()
-      .pipe(takeUntil(this.updateDestroy$))
+      .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
+        this.updateDestroy$.next();
         this.store.dispatch(MenuActions.getCategories());
-        this.destroy$.next();
-        this.subToForm();
       });
   }
 
   private subToForm(): void {
-    this.storeCategories$.subscribe((categories) => {
-      this.formCategories = this.fb.group(this.createFormCategory(categories));
+    this.storeCategories$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((categories) => {
+        this.formCategories = this.fb.group(
+          this.createFormCategory(categories)
+        );
 
-      this.route.queryParamMap
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((params) => {
-          const paramsArr = params.getAll('category');
-
-          if (!paramsArr.length) return;
-          const paramsObject = paramsArr.reduce((acc, param) => {
-            acc[param] = true;
-
-            return acc;
-          }, {} as { [key: string]: boolean });
-
-          this.formCategories.patchValue(paramsObject);
-        });
-
-      this.formCategories.valueChanges
-        .pipe(
-          debounceTime(300),
-          map((category) =>
-            Object.entries(category)
-              .filter((category) => category[1])
-              .map((selectedCategory) => selectedCategory[0])
-          ),
-          takeUntil(this.destroy$)
-        )
-        .subscribe((data) => this.productFilters.emit(data));
-    });
+        this.formCategories.valueChanges
+          .pipe(
+            debounceTime(300),
+            map((category) =>
+              Object.entries(category)
+                .filter((category) => category[1])
+                .map((selectedCategory) => selectedCategory[0])
+            ),
+            takeUntil(this.updateDestroy$),
+            takeUntil(this.destroy$)
+          )
+          .subscribe((data) => {
+            this.menuCategoriesHandler.emit(data);
+          });
+      });
   }
 
   public ngOnInit(): void {
-    this.isEdit = this.route.routeConfig?.path === 'menu/edit';
+    this.isEdit = this.activatedRoute.routeConfig?.path === 'menu/edit';
     this.subToForm();
     this.setUpdateSub();
   }

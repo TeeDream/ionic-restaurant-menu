@@ -34,7 +34,8 @@
       </ion-header>
       <ion-content>
         <app-category-filter
-          (productFilters)="menuCategoriesHandler($event)"
+          (setCategoryToastOpen)="setCRUDToastOpen(true, ProductType.CATEGORY, $event)"
+          (menuCategoriesHandler)="menuCategoriesHandler($event)"
           [isAdmin]="isAdmin"
         ></app-category-filter>
       </ion-content>
@@ -45,7 +46,7 @@
     [isCreateProductModalOpen]="isCreateProductModalOpen"
     [storeCategories]="storeCategories$ | async"
     (setCreateProductOpen)="setCreateProductOpen($event)"
-    (setProductToastOpen)="setProductToastOpen(true, $event)"
+    (setProductToastOpen)="setCRUDToastOpen(true, ProductType.DISH, $event)"
   ></app-product-create-modal>
 
   <app-product-edit-modal
@@ -53,7 +54,7 @@
     (setModifyProductOpen)="setModifyProductOpen($event)"
     [storeCategories]="storeCategories$ | async"
     [notify$]="notify$.asObservable()"
-    (setProductToast)="setProductToastOpen(true, $event)"
+    (setProductToast)="setCRUDToastOpen(true, ProductType.DISH, $event)"
   ></app-product-edit-modal>
 
   <ng-container *ngIf="storeProducts$ | async as products">
@@ -65,11 +66,12 @@
       "
     >
       <ion-item>
-        <div>Sorry, but there are no products that satisfies query or filter...</div>
+        <div>
+          Sorry, but there are no products that satisfies query or filter...
+        </div>
       </ion-item>
     </ng-container>
 
-    <!--    <div *ngIf="isFiltersEmpty$ | async">No items that corresponds with query or filter!</div>-->
     <ng-container *ngIf="storeHotProducts$ | async as hotProducts">
       <ng-container *ngIf="storeCategories$ | async as storeCategories">
         <ng-container *ngIf="isFiltersEmpty$ | async">
@@ -89,7 +91,6 @@
                     [isAuth]="isAuth$ | async"
                     [isAdmin]="isAdmin"
                     [isEditing]="isEditing"
-                    [categories]="storeCategories"
                   ></app-product-item>
                 </ion-col>
               </ion-row>
@@ -120,7 +121,6 @@
                     [isAuth]="isAuth$ | async"
                     [isAdmin]="isAdmin"
                     [isEditing]="isEditing"
-                    [categories]="storeCategories"
                   >
                   </app-product-item>
                 </ion-col>
@@ -155,9 +155,9 @@
 
   <ion-toast
     position="bottom"
-    [message]="productToastText"
-    [isOpen]="isProductToastOpen"
-    (didDismiss)="setProductToastOpen(false)"
+    [message]="crudToastText"
+    [isOpen]="isCRUDToastOpen"
+    (didDismiss)="setCRUDToastOpen(false)"
     [duration]="3000"
     [buttons]="[
       {

@@ -3,7 +3,9 @@ import { CategoryInterface, ProductInterface } from '@src/app/core/types';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DataService } from '@src/app/core/services/data.service';
 import { Observable } from 'rxjs';
-import { ProductActionState } from '@src/app/menu/enums/product-action.state';
+import { CrudToastActionInterface } from '@src/app/menu/types/crud-toast-action.interface';
+import { ProductActionType } from '@src/app/menu/enums/product-action-type';
+import { ProductActionResult } from '@src/app/menu/enums/product-action-result';
 
 @Component({
   selector: 'app-product-edit-modal',
@@ -15,8 +17,8 @@ export class ProductEditModalComponent implements OnInit {
   @Input() storeCategories!: CategoryInterface[] | null;
   @Output() setModifyProductOpen: EventEmitter<boolean> =
     new EventEmitter<boolean>();
-  @Output() setProductToast: EventEmitter<ProductActionState> =
-    new EventEmitter<ProductActionState>();
+  @Output() setProductToast: EventEmitter<CrudToastActionInterface> =
+    new EventEmitter<CrudToastActionInterface>();
   @Input() notify$!: Observable<ProductInterface>;
   public modifyProductGroup: FormGroup | null = null;
   public selectedProductToModify: ProductInterface | null = null;
@@ -53,10 +55,16 @@ export class ProductEditModalComponent implements OnInit {
           this.dataService.renewProducts$.next();
           this.modifyProductGroup?.reset();
           this.setModifyProductOpen.emit(false);
-          this.setProductToast.emit(ProductActionState.MODIFY_SUCCESS);
+          this.setProductToast.emit({
+            action: ProductActionType.MODIFY,
+            result: ProductActionResult.SUCCESS,
+          });
         },
         error: (error) => {
-          this.setProductToast.emit(ProductActionState.MODIFY_FAILURE);
+          this.setProductToast.emit({
+            action: ProductActionType.MODIFY,
+            result: ProductActionResult.FAILURE,
+          });
         },
       });
   }
